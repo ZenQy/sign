@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"time"
 
 	"github.com/wxpusher/wxpusher-sdk-go"
@@ -45,6 +46,7 @@ func main() {
 
 	ioutil.WriteFile(fn, data, 0644)
 	sendMsg(msg)
+	log.Println("本次运行完成...")
 }
 
 func sendMsg(content string) error {
