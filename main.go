@@ -10,6 +10,7 @@ import (
 	"github.com/wxpusher/wxpusher-sdk-go/model"
 	"github.com/zenqy/sign/mt"
 	"github.com/zenqy/sign/paoluz"
+	"github.com/zenqy/sign/pdawiki"
 	"gopkg.in/yaml.v2"
 )
 
@@ -33,6 +34,9 @@ func main() {
 				msg += fmt.Sprintf("%s | %s | %s\n", k, conf[k][i]["username"], txt)
 			case "mt":
 				txt := mt.Sign(conf[k][i])
+				msg += fmt.Sprintf("%s | %s | %s\n", k, conf[k][i]["username"], txt)
+			case "pdawiki":
+				txt := pdawiki.Sign(conf[k][i])
 				msg += fmt.Sprintf("%s | %s | %s\n", k, conf[k][i]["username"], txt)
 			}
 
