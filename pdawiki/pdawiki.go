@@ -1,46 +1,27 @@
 package pdawiki
 
 import (
+	"bytes"
 	"crypto/md5"
 	"fmt"
-	"net/url"
-	"strings"
+	"log"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/go-resty/resty/v2"
 )
 
-// Sign 签到
-func Sign(m map[string]string) string {
-	username, password, cookie := m["username"], m["password"], m["cookie"]
+// Do 签到
+func Do(username, password string) string {
 	client := resty.New()
-	if !loginCookie(client, cookie) {
-		if !loginPassword(client, username, password) {
-			return "失败"
-		}
-		cookies := make([]string, 0)
-		u, err := url.Parse("https://www.pdawiki.com/")
-		if err != nil {
-			return "失败"
-		}
 
-		for _, c := range client.GetClient().Jar.Cookies(u) {
-			cookies = append(cookies, c.Name+"="+c.Value)
-		}
-		m["cookie"] = strings.Join(cookies, "; ")
-
-		resp, err := client.R().Get("https://www.pdawiki.com/forum/home.php?mod=spacecp&ac=profile")
-		if err != nil {
-			return "失败"
-		}
-		if !strings.Contains(resp.String(), "基本资料") {
-			return "失败"
-		}
+	if !login(client, username, password) {
+		return "登录失败"
 	}
 
-	return "成功"
+	return extcredit(client)
 }
 
-func loginPassword(client *resty.Client, username, password string) bool {
+func login(client *resty.Client, username, password string) bool {
 	hash := md5.Sum([]byte(password))
 	passwordMD5 := fmt.Sprintf("%x", hash)
 
@@ -60,14 +41,23 @@ func loginPassword(client *resty.Client, username, password string) bool {
 	return true
 }
 
-func loginCookie(client *resty.Client, cookie string) bool {
-	req := client.R()
-	resp, err := req.SetHeader("cookie", cookie).Get("https://www.pdawiki.com/forum/home.php?mod=spacecp&ac=profile")
+func extcredit(client *resty.Client) string {
+	msg := "获取积分失败"
+	url := "https://www.pdawiki.com/forum/home.php?mod=spacecp&ac=credit&showcredit=1"
+	resp, err := client.R().Get(url)
 	if err != nil {
-		return false
+		log.Println(err)
+		return msg
 	}
-	if strings.Contains(resp.String(), "基本资料") {
-		client.SetCookies(req.Cookies)
+
+	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(resp.Body()))
+	if err != nil {
+		log.Println(err)
+		return msg
 	}
-	return false
+	txt := doc.Find(`#extcreditmenu`).Text()
+	if txt == "" {
+		return msg
+	}
+	return txt
 }

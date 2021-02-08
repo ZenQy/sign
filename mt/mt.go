@@ -2,7 +2,6 @@ package mt
 
 import (
 	"bytes"
-	"net/url"
 	"regexp"
 	"strings"
 
@@ -32,33 +31,21 @@ func sign(client *resty.Client) bool {
 	return strings.Contains(ctx, "签到成功") || strings.Contains(ctx, "今日已签")
 }
 
-// Sign 签到
-func Sign(m map[string]string) string {
-	username, password, cookie := m["username"], m["password"], m["cookie"]
+// Do 签到
+func Do(username, password string) string {
 	client := resty.New()
-	if !loginCookie(client, cookie) {
-		if !loginPassword(client, username, password) {
-			return "失败"
-		}
-		cookies := make([]string, 0)
-		u, err := url.Parse("https://bbs.binmt.cc/")
-		if err != nil {
-			return "失败"
-		}
 
-		for _, c := range client.GetClient().Jar.Cookies(u) {
-			cookies = append(cookies, c.Name+"="+c.Value)
-		}
-		m["cookie"] = strings.Join(cookies, "; ")
+	if !login(client, username, password) {
+		return "登录失败"
 	}
 
 	if sign(client) {
-		return "成功"
+		return "签到成功"
 	}
-	return "失败"
+	return "签到失败"
 }
 
-func loginPassword(client *resty.Client, username, password string) bool {
+func login(client *resty.Client, username, password string) bool {
 	formdata := map[string]string{
 		"loginfield": "username",
 		"username":   username,
@@ -95,16 +82,4 @@ func loginPassword(client *resty.Client, username, password string) bool {
 	}
 
 	return strings.Contains(resp.String(), "欢迎您回来")
-}
-
-func loginCookie(client *resty.Client, cookie string) bool {
-	req := client.R()
-	resp, err := req.SetHeader("cookie", cookie).Get("https://bbs.binmt.cc/")
-	if err != nil {
-		return false
-	}
-	if strings.Contains(resp.String(), "用户组") {
-		client.SetCookies(req.Cookies)
-	}
-	return false
 }

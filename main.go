@@ -8,6 +8,7 @@ import (
 
 	"github.com/wxpusher/wxpusher-sdk-go"
 	"github.com/wxpusher/wxpusher-sdk-go/model"
+	"github.com/zenqy/sign/cloud189"
 	"github.com/zenqy/sign/mt"
 	"github.com/zenqy/sign/paoluz"
 	"github.com/zenqy/sign/pdawiki"
@@ -28,29 +29,27 @@ func main() {
 	msg := "网站|帐号|签到\n:--:|:--:|:--:\n"
 	for k := range conf {
 		for i := range conf[k] {
+			username, password := conf[k][i]["username"], conf[k][i]["password"]
 			switch k {
 			case "paoluz":
-				txt := paoluz.Sign(conf[k][i])
+				txt := paoluz.Do(username, password)
 				msg += fmt.Sprintf("%s | %s | %s\n", k, conf[k][i]["username"], txt)
 			case "mt":
-				txt := mt.Sign(conf[k][i])
+				txt := mt.Do(username, password)
 				msg += fmt.Sprintf("%s | %s | %s\n", k, conf[k][i]["username"], txt)
 			case "pdawiki":
-				txt := pdawiki.Sign(conf[k][i])
+				txt := pdawiki.Do(username, password)
+				msg += fmt.Sprintf("%s | %s | %s\n", k, conf[k][i]["username"], txt)
+			case "cloud189":
+				txt := cloud189.Do(username, password)
 				msg += fmt.Sprintf("%s | %s | %s\n", k, conf[k][i]["username"], txt)
 			}
 
 		}
 	}
 
-	data, err = yaml.Marshal(&conf)
-	if err != nil {
-		panic(err)
-	}
-
-	ioutil.WriteFile(fn, data, 0644)
 	sendMsg(msg)
-	log.Println("本次运行完成...")
+	log.Println("本次运行完成...\n" + msg)
 }
 
 func sendMsg(content string) error {

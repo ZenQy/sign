@@ -1,8 +1,13 @@
 mt:
-- cookie: xxxxxxxxxxxx
-  password: xxxxxx
+- password: xxxxxx
   username: xxxxxxxx
 paoluz:
-- cookie: xxxxxxxxxxxxx
-  password: xxxxxxxxxx
+- password: xxxxxxxxxx
   username: xxxxxxxx
+pdawiki:
+- password: xxxxxxxxxx
+  username: xxxxxxxx
+cloud189:
+- password: xxxxxxxxxx
+  username: xxxxxxxx
+
